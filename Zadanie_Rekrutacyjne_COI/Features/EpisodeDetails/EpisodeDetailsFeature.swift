@@ -21,13 +21,15 @@ struct EpisodeDetailsFeature {
         case episodeResponse(Result<Episode, APIError>)
     }
     
+    @Dependency(\.apiClient) var apiClient
+    
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear(let selectedEpisodeID):
                 state.isLoading = true
                 return .run { send in
-                    let result = await APIClient().getEpisode(byId: selectedEpisodeID)
+                    let result = try await apiClient.getEpisodeByID(selectedEpisodeID)
                     await send(.episodeResponse(result))
                 }
                 

@@ -31,6 +31,8 @@ struct CharactersListFeature {
         case charactersSorted
     }
     
+    @Dependency(\.apiClient) var apiClient
+    
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
@@ -60,7 +62,7 @@ struct CharactersListFeature {
                 state.showWelcomeMessage = false
                 let currentPage = state.currentPage
                 return .run { send in
-                    let result = await APIClient().getCharacters(page: currentPage)
+                    let result = try await apiClient.getCharactersForPage(currentPage)
                     await send(.charactersResponseReceived(result))
                 }
             case .charactersResponseReceived(.success(let success)):
@@ -83,7 +85,7 @@ struct CharactersListFeature {
                     state.isLoading = true
                     state.currentPage = pageToLoad
                     return .run { send in
-                        let result = await APIClient().getCharacters(page: pageToLoad)
+                        let result = try await apiClient.getCharactersForPage(pageToLoad)
                         await send(.charactersResponseReceived(result))
                     }
                 } else {
@@ -95,7 +97,7 @@ struct CharactersListFeature {
                     state.isLoading = true
                     state.currentPage = pageToLoad
                     return .run { send in
-                        let result = await APIClient().getCharacters(page: pageToLoad)
+                        let result = try await apiClient.getCharactersForPage(pageToLoad)
                         await send(.charactersResponseReceived(result))
                     }
                 } else {

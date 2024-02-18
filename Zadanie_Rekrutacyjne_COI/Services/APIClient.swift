@@ -6,58 +6,64 @@
 //
 
 import Foundation
+import ComposableArchitecture
 
 struct APIClient {
-    let baseURL = "https://rickandmortyapi.com/api"
-    let session: URLSession
-    
-    init(session: URLSession = .shared) {
-        self.session = session
-    }
-    
-    func getCharacters(page: Int) async -> Result<CharactersResponse, APIError> {
-        guard let url = URL(string: "\(baseURL)/character?page=\(page)") else {
-            return .failure(.urlError)
-        }
-        
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                return .failure(.httpResponseError)
+    static let baseURL = "https://rickandmortyapi.com/api"
+    var getCharactersForPage: (Int) async throws -> Result<CharactersResponse, APIError>
+    var getEpisodeByID: (Int) async throws -> Result<Episode, APIError>
+}
+
+extension APIClient: DependencyKey {
+    static var liveValue = APIClient(
+        getCharactersForPage: { page in
+            guard let url = URL(string: "\(baseURL)/character?page=\(page)") else {
+                return .failure(.urlError)
+            }
+            do {
+                let (data, response) = try await URLSession.shared.data(from: url)
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    return .failure(.httpResponseError)
+                }
+                
+                do {
+                    let decodedResponse = try JSONDecoder().decode(CharactersResponse.self, from: data)
+                    return .success(decodedResponse)
+                } catch {
+                    return .failure(.decodingError)
+                }
+            } catch {
+                return .failure(.unknownError)
+            }
+        }, getEpisodeByID: { id in
+            guard let url = URL(string: "\(baseURL)/episode/\(id)") else {
+                return .failure(.urlError)
             }
             
             do {
-                let decodedResponse = try JSONDecoder().decode(CharactersResponse.self, from: data)
-                return .success(decodedResponse)
+                let (data, response) = try await URLSession.shared.data(from: url)
+                
+                guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    return .failure(.httpResponseError)
+                }
+                
+                do {
+                    let decodedResponse = try JSONDecoder().decode(Episode.self, from: data)
+                    return .success(decodedResponse)
+                } catch {
+                    return .failure(.decodingError)
+                }
             } catch {
-                return .failure(.decodingError)
+                return .failure(.unknownError)
             }
-        } catch {
-            return .failure(.unknownError)
         }
-    }
-    
-    func getEpisode(byId id: Int) async -> Result<Episode, APIError> {
-        guard let url = URL(string: "\(baseURL)/episode/\(id)") else {
-            return .failure(.urlError)
-        }
-        
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                return .failure(.httpResponseError)
-            }
-            
-            do {
-                let decodedResponse = try JSONDecoder().decode(Episode.self, from: data)
-                return .success(decodedResponse)
-            } catch {
-                return .failure(.decodingError)
-            }
-        } catch {
-            return .failure(.unknownError)
-        }
+    )
+}
+
+extension DependencyValues {
+    var apiClient: APIClient {
+        get { self[APIClient.self] }
+        set { self[APIClient.self] = newValue }
     }
 }
