@@ -9,8 +9,8 @@ import SwiftUI
 import ComposableArchitecture
 
 struct CharactersListView: View {
-    @EnvironmentObject var favoritesService: FavoritesService
     let store: StoreOf<CharactersListFeature>
+    @State private var showOnlyFavorites = false
     
     var body: some View {
         NavigationView {
@@ -23,9 +23,14 @@ struct CharactersListView: View {
                 } else if store.isLoading {
                     ProgressView()
                 } else {
-                    sortingMenu
-                    charactersList
-                    pageNavigation.padding()
+                    showOnlyFavoritesButton
+                    if showOnlyFavorites {
+                        filteredCharactersList
+                    } else {
+                        sortingMenu
+                        charactersList
+                        pageNavigation.padding()
+                    }
                 }
             }
             .navigationTitle("Rick and Morty Characters")
@@ -58,20 +63,30 @@ struct CharactersListView: View {
     
     private var charactersList: some View {
         List(store.characters) { character in
-            NavigationLink(destination: CharacterDetailsView(character: character)) {
+            NavigationLink(destination: CharacterDetailsView(store: Store(initialState: CharacterDetailsFeature.State()) {
+                CharacterDetailsFeature()
+            }, character: character)) {
                 characterRow(for: character)
             }
+        }
+        .onAppear {
+            store.send(.updateFavorites)
         }
         .listStyle(.plain)
     }
     
     private var filteredCharactersList: some View {
-        List(store.characters.filter { favoritesService.isFavorite(id: $0.id) }) { character in
-            NavigationLink(destination: CharacterDetailsView(character: character)) {
+        List(store.favoriteCharacters) { character in
+            NavigationLink(destination: CharacterDetailsView(store: Store(initialState: CharacterDetailsFeature.State()) {
+                CharacterDetailsFeature()
+            }, character: character)) {
                 characterRow(for: character)
             }
         }
         .listStyle(.plain)
+        .onAppear {
+            store.send(.updateFavorites)
+        }
     }
     
     private func characterRow(for character: Character) -> some View {
@@ -84,7 +99,8 @@ struct CharactersListView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
-            if favoritesService.isFavorite(id: character.id) {
+            
+            if store.favoriteCharacters.contains(where: {$0.id == character.id}) {
                 Image(systemName: "star.fill")
                     .foregroundStyle(Color.yellow)
                     .accessibilityLabel("Favorite")
@@ -129,8 +145,8 @@ struct CharactersListView: View {
     private var resetButton: some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {
             Button(action: {
+                showOnlyFavorites = false
                 store.send(.resetButtonTapped)
-                favoritesService.clearFavorites()
             }) {
                 Image(systemName: "arrow.counterclockwise")
             }
@@ -147,6 +163,20 @@ struct CharactersListView: View {
                 }
             }
             .menuStyle(DefaultMenuStyle())
+            
+            Spacer()
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(10)
+        .shadow(radius: 5)
+    }
+    
+    private var showOnlyFavoritesButton: some View {
+        HStack {
+            Button(showOnlyFavorites ? "Show all characters" : "Show only favorites") {
+                showOnlyFavorites.toggle()
+            }
             
             Spacer()
         }

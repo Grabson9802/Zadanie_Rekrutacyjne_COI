@@ -9,8 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 
 struct CharacterDetailsView: View {
-    @EnvironmentObject var favoritesService: FavoritesService
-    
+    let store: StoreOf<CharacterDetailsFeature>
     let character: Character
     
     var body: some View {
@@ -26,6 +25,9 @@ struct CharacterDetailsView: View {
                 episodesList
             }
             .padding()
+        }
+        .onAppear {
+            store.send(.onAppear(character.id))
         }
         .navigationTitle("Character Details")
         .navigationBarTitleDisplayMode(.inline)
@@ -78,11 +80,11 @@ struct CharacterDetailsView: View {
     private var favoriteButton: some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {
             Button(action: {
-                favoritesService.toggleFavorite(id: character.id)
+                store.send(.toggleFavorite(character))
             }) {
-                Image(systemName: favoritesService.isFavorite(id: character.id) ? "star.fill" : "star")
+                Image(systemName: store.isFavorite ? "star.fill" : "star")
                     .font(.title2)
-                    .foregroundStyle(favoritesService.isFavorite(id: character.id) ? .yellow : .gray)
+                    .foregroundStyle(store.isFavorite ? .yellow : .gray)
             }
         }
     }

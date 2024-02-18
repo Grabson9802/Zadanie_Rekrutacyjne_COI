@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6631929F2B80E550000FC716 /* FavoritesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6631929E2B80E550000FC716 /* FavoritesService.swift */; };
+		66868F392B8273BD009C1D1D /* CharacterDetailsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66868F382B8273BD009C1D1D /* CharacterDetailsFeature.swift */; };
 		6689F6902B81728100B27F2E /* SortBy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6689F68F2B81728100B27F2E /* SortBy.swift */; };
 		6689F6932B8175DE00B27F2E /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6689F6922B8175DE00B27F2E /* APIError.swift */; };
 		668E4AA32B7F6EA300A70309 /* Zadanie_Rekrutacyjne_COIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 668E4AA22B7F6EA300A70309 /* Zadanie_Rekrutacyjne_COIApp.swift */; };
@@ -26,6 +27,7 @@
 
 /* Begin PBXFileReference section */
 		6631929E2B80E550000FC716 /* FavoritesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesService.swift; sourceTree = "<group>"; };
+		66868F382B8273BD009C1D1D /* CharacterDetailsFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterDetailsFeature.swift; sourceTree = "<group>"; };
 		6689F68F2B81728100B27F2E /* SortBy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortBy.swift; sourceTree = "<group>"; };
 		6689F6922B8175DE00B27F2E /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
 		668E4A9F2B7F6EA300A70309 /* Zadanie_Rekrutacyjne_COI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zadanie_Rekrutacyjne_COI.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -140,6 +142,7 @@
 			isa = PBXGroup;
 			children = (
 				668E4ABD2B7F867C00A70309 /* CharacterDetailsView.swift */,
+				66868F382B8273BD009C1D1D /* CharacterDetailsFeature.swift */,
 			);
 			path = CharacterDetails;
 			sourceTree = "<group>";
@@ -258,6 +261,7 @@
 				668E4AA52B7F6EA300A70309 /* CharactersListView.swift in Sources */,
 				668E4AC22B7F91A500A70309 /* EpisodeDetailsView.swift in Sources */,
 				668E4AB92B7F797100A70309 /* APIClient.swift in Sources */,
+				66868F392B8273BD009C1D1D /* CharacterDetailsFeature.swift in Sources */,
 				668E4AA32B7F6EA300A70309 /* Zadanie_Rekrutacyjne_COIApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

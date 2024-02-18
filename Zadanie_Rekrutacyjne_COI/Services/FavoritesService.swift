@@ -6,42 +6,57 @@
 //
 
 import Foundation
+import ComposableArchitecture
 
 class FavoritesService: ObservableObject {
-    @Published var favorites: Set<Int> {
+    @Published var favorites: [Character] {
         didSet {
             saveFavorites()
         }
     }
-    
+
     private let favoritesKey = "Favorites"
-    
+
     init() {
         self.favorites = []
-        self.favorites = Set(loadFavorites())
+        self.favorites = loadFavorites()
     }
-    
-    func toggleFavorite(id: Int) {
-        if favorites.contains(id) {
-            favorites.remove(id)
+
+    func toggleFavorite(character: Character) {
+        if let index = favorites.firstIndex(where: { $0.id == character.id }) {
+            favorites.remove(at: index)
         } else {
-            favorites.insert(id)
+            favorites.append(character)
         }
     }
-    
+
     func isFavorite(id: Int) -> Bool {
-        return favorites.contains(id)
+        return favorites.contains(where: { $0.id == id })
     }
-    
-    private func loadFavorites() -> [Int] {
-        return UserDefaults.standard.array(forKey: favoritesKey) as? [Int] ?? []
-    }
-    
-    private func saveFavorites() {
-        UserDefaults.standard.set(Array(favorites), forKey: favoritesKey)
-    }
-    
+
     func clearFavorites() {
         favorites.removeAll()
+    }
+
+    private func loadFavorites() -> [Character] {
+        guard let data = UserDefaults.standard.data(forKey: favoritesKey) else { return [] }
+        return (try? JSONDecoder().decode([Character].self, from: data)) ?? []
+    }
+
+    private func saveFavorites() {
+        let data = try? JSONEncoder().encode(favorites)
+        UserDefaults.standard.set(data, forKey: favoritesKey)
+    }
+}
+
+
+extension DependencyValues {
+    var favoritesService: FavoritesService {
+        get { self[FavoritesServiceKey.self] }
+        set { self[FavoritesServiceKey.self] = newValue }
+    }
+
+    private struct FavoritesServiceKey: DependencyKey {
+        static let liveValue = FavoritesService()
     }
 }

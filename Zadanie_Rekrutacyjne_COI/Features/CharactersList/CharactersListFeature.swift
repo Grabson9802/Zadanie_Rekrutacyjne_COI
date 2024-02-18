@@ -18,6 +18,7 @@ struct CharactersListFeature {
         var showWelcomeMessage = true
         var currentPage = 1
         var currentSortByValue: SortBy = .id
+        var favoriteCharacters: [Character] = []
     }
     
     enum Action {
@@ -29,34 +30,15 @@ struct CharactersListFeature {
         case retryButtonTapped
         case sortButtonTapped(sortBy: SortBy)
         case charactersSorted
+        case updateFavorites
     }
     
     @Dependency(\.apiClient) var apiClient
+    @Dependency(\.favoritesService) var favoritesService
     
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-            case .charactersSorted:
-                switch state.currentSortByValue {
-                case .status:
-                    state.characters.sort(by: {$0.status < $1.status})
-                case .gender:
-                    state.characters.sort(by: {$0.gender < $1.gender})
-                case .origin:
-                    state.characters.sort(by: {$0.origin.name < $1.origin.name})
-                case .location:
-                    state.characters.sort(by: {$0.location.name < $1.location.name})
-                case .id:
-                    state.characters.sort(by: {$0.id < $1.id})
-                case .name:
-                    state.characters.sort(by: {$0.name < $1.name})
-                }
-                return .none
-            case .sortButtonTapped(let sortBy):
-                state.currentSortByValue = sortBy
-                return .run { send in
-                    await send(.charactersSorted)
-                }
             case .loadCharactersButtonTapped:
                 state.isLoading = true
                 state.showWelcomeMessage = false
@@ -78,6 +60,7 @@ struct CharactersListFeature {
                 return .none
             case .resetButtonTapped:
                 state = CharactersListFeature.State()
+                favoritesService.clearFavorites()
                 return .none
             case .nextPageButtonTapped:
                 let pageToLoad = state.currentPage + 1
@@ -107,6 +90,33 @@ struct CharactersListFeature {
                 return .run { send in
                     await send(.loadCharactersButtonTapped)
                 }
+            case .sortButtonTapped(let sortBy):
+                state.currentSortByValue = sortBy
+                return .run { send in
+                    await send(.charactersSorted)
+                }
+            case .charactersSorted:
+                switch state.currentSortByValue {
+                case .status:
+                    state.characters.sort(by: {$0.status < $1.status})
+                case .gender:
+                    state.characters.sort(by: {$0.gender < $1.gender})
+                case .origin:
+                    state.characters.sort(by: {$0.origin.name < $1.origin.name})
+                case .location:
+                    state.characters.sort(by: {$0.location.name < $1.location.name})
+                case .id:
+                    state.characters.sort(by: {$0.id < $1.id})
+                case .name:
+                    state.characters.sort(by: {$0.name < $1.name})
+                }
+                
+                return .send(.updateFavorites)
+            case .updateFavorites:
+//                state.favoriteCharacters = state.characters.filter({favoritesService.isFavorite(id: $0.id)})
+                state.favoriteCharacters = favoritesService.favorites
+                
+                return .none
             }
         }
     }
